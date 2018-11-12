@@ -130,10 +130,10 @@ public class UnionTypeInterpreter extends BaseTypeInterpreter {
 
 			String childType = childResult.getResolvedClassOrBuiltOrObject().fullName();
 			builder.withField(objectProperty.name(), childType, RamlTypeHelper.getDescription(objectProperty), childResult.getValidations(),
-					objectProperty);
+					objectProperty,true);
 		}
 		// Add a constructor with all fields
-		builder.withCompleteConstructor();
+		builder.withCompleteConstructor(null);
 
 		// Add overriden hashCode(), equals() and toString() methods
 		builder.withOverridenMethods(Collections.emptyList());

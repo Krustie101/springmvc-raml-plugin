@@ -1,0 +1,53 @@
+#%RAML 1.0 Library
+
+uses:
+  enumerations: enumerations.raml
+  loadTypes: loadTypes.raml
+  refData: referenceData.raml
+  tariffStructureTypes:  tariffStructureTypes.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  AbstractSurchargeCost:
+    discriminator: type
+    properties:
+      id: string
+      type:
+        type: string
+        enum: [adhoc,regular]
+      surchargeType: enumerations.SurchargeType
+      payType: enumerations.TariffStructurePayType
+      dueType: enumerations.TariffStructureDueType
+      surchargeCode: refData.SurchargeCode
+      chargeAmount: valueTypes.MonetaryAmount
+
+  CalculatedRegularSurchargeCost:
+    properties:
+      id: string
+      payType: enumerations.TariffStructurePayType
+      weighUnit: enumerations.WeightUnit
+      chargeAmount: valueTypes.MonetaryAmount
+
+  RegularSurchargeCost:
+    type: AbstractSurchargeCost
+    discriminatorValue: regular
+    properties:
+      allMatchedChargeBy: boolean
+      matchedRateCostCurrency: boolean
+      surchargeTariffStructure: tariffStructureTypes.TariffStructure
+      calculatedSurchargeCost: CalculatedRegularSurchargeCost
+      loadSurchargeCosts: LoadSurchargeCost[]
+
+  AdhocSurchargeCost:
+    type: AbstractSurchargeCost
+    discriminatorValue: adhoc
+
+  #SurchargeCost:
+  #  description: Union of Regular and Adhoc cost
+  #  type: RegularSurchargeCost | AdhocSurchargeCost
+
+  LoadSurchargeCost:
+    properties:
+      matchedChargeBy: boolean
+      loads: loadTypes.AbstractLoad[]

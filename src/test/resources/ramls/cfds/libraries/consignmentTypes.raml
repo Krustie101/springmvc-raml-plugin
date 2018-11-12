@@ -1,0 +1,72 @@
+#%RAML 1.0 Library
+uses:
+  enumerations: enumerations.raml
+  loadTypes:  loadTypes.raml
+  movementTypes:  movementTypes.raml
+  refData:    referenceData.raml
+  generalTypes: generalTypes.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  AbstractConsignment:
+    discriminator: direction
+    discriminatorValue: general
+    properties:
+      id: string
+      adhoc: boolean
+      adhocReason: refData.AdhocReason
+      allotment: generalTypes.Allotment
+      direction: enumerations.DirectionType
+      owner: refData.Station
+      paperwork: generalTypes.Paperwork
+      masterLoader: refData.Agent
+      issuingCarrier: refData.Carrier
+      capacityCarrier: refData.Carrier
+      airlineService: refData.AirlineService
+      rateCode: enumerations.RateCode
+      ratingType: enumerations.RatingType
+      transportType: enumerations.TransportType
+      status: enumerations.ConsignmentStatus
+      invoiceWeightMatchStatus: enumerations.InvoiceWeightMatchStatus
+      volumetricWeightDivisor: enumerations.VolumetricWeightDivisor
+      comments: string
+      movement:
+      loads: loadTypes.AbstractLoad[]
+      looseLoadDimensions: loadTypes.LoadQuantityDimension[]
+      speedpackPieceRanges: loadTypes.SpeedPackPieceRange[]
+
+  OBConsignment:
+    type: AbstractConsignment
+    discriminatorValue: outbound
+    properties:
+      dummyWeight: boolean
+      dummyCost: boolean
+      issuingCarrierAgent: refData.Agent
+      carrierProduct: refData.CarrierProduct
+      consignee: refData.Customer
+      shipper: refData.Customer
+      product: refData.Product
+      
+  AdhocOBConsignment:
+    type: OBConsignment
+    discriminatorValue: outbound-adhoc
+    properties:
+      texting: boolean
+        
+  PlannedOBConsignment:
+    type: OBConsignment
+    discriminatorValue: outbound-planned
+    properties:
+      resting: string
+  
+  IBConsignment:
+    type: AbstractConsignment
+    discriminatorValue: inbound
+    properties:
+      sequence: integer
+      #consignments: integer
+
+  #Consignment:
+  #  type: OBConsignment|IBConsignment
+  #  description: Union of ib and ob consignment

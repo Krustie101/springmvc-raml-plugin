@@ -1,0 +1,53 @@
+#%RAML 1.0 Library
+
+uses:
+  enumerations: enumerations.raml
+  refData:    referenceData.raml
+  generalTypes: generalTypes.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  Reconciliation:
+    properties:
+      toleranceAmount: valueTypes.MonetaryAmount
+      tolerancePercentage: number
+      exhangeRateType: refData.ExchangeRateType
+      reconciliationInstant: datetime-only
+
+  Invoice:
+    properties:
+      uuid: string
+      reference: string
+
+  AdditionalInfo:
+    properties:
+      name: string
+      value: string
+
+  InvoiceItem:
+    properties:
+      consignment:
+        type:
+          properties:
+            uuid: string
+            paperwork: generalTypes.Paperwork
+      paperworkNumber: string
+      amount: valueTypes.MonetaryAmount
+      finalAmount: valueTypes.MonetaryAmount
+      expectedCostAmount: valueTypes.MonetaryAmount
+      # deprecated: old way of reconciling
+      reconciledOtherInvoiceItemAmount: valueTypes.MonetaryAmount
+      comments: string
+      # deprecated: old way of reconciling
+      reconciliationStatus: enumerations.ReconciliationStatus
+      reconciliationInclusionStatus: enumerations.ReconciliationInclusionStatus
+      valid: boolean
+      invalidityReason: enumerations.InvoiceItemInvalidityReason
+      invoice: Invoice
+      # deprecated: old way of reconciling
+      reconciliation: Reconciliation
+      additionalInfos:
+        type: array
+        items:
+          type: AdditionalInfo

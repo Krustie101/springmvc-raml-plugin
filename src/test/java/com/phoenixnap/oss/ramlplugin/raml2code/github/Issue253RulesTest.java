@@ -1,5 +1,6 @@
 package com.phoenixnap.oss.ramlplugin.raml2code.github;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.phoenixnap.oss.ramlplugin.raml2code.plugin.TestConfig;
@@ -12,6 +13,7 @@ import com.phoenixnap.oss.ramlplugin.raml2code.rules.Spring4ControllerDecoratorR
  */
 public class Issue253RulesTest extends GitHubAbstractRuleTestBase {
 
+	@Ignore
 	@Test
 	public void verify_custom_datetime_types() throws Exception {
 		TestConfig.setDateTimeType("java.time.ZonedDateTime");

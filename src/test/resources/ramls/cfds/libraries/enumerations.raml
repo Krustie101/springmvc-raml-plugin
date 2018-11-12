@@ -1,0 +1,65 @@
+#%RAML 1.0 Library
+types:
+
+  ConsignmentStatus:
+    enum: [initial,planned,booked,used,unbooked,unused,revoked]
+
+  CostType:
+    enum: [freight,inbound]
+
+  CustomerType:
+    enum: [local_shipper,local_consignee,remote_shipper,remote_consignee,local_consignee_shipper,remote_consignee_shipper]
+
+  DirectionType:
+    enum: [outbound,inbound]
+
+  ExpectedCostStatus:
+    enum: [none,incomplete,calculated,fixed,reconciled]
+
+  InvoiceItemInvalidityReason:
+    enum: [consignment_not_found,no_expected_cost,expected_cost_not_fixed,already_reconciled]
+
+  InvoiceWeightMatchStatus:
+    enum: [none,match,no_match]
+
+  LengthUnit:
+    enum: [cmtr,inch,mtr,foot]
+
+  MawbRateClass:
+    enum: [C,E,K,M,N,Q,R,S,U]
+
+  RateCode:
+    enum: [network,joint_venture,purchased_air]
+
+  RatingType:
+    enum: [speedpack,standard]
+
+  ReconciliationInclusionStatus:
+    enum: [none,included,not_included]
+
+  ReconciliationStatus:
+    enum: [none,ok,nok]
+
+  SurchargeType:
+    enum: [tax_charge,other_charge,ib_handling_charge]
+
+  TariffStructureDueType:
+    enum: [agent,carrier]
+
+  TariffStructurePayType:
+    enum: [prepaid,collect]
+
+  TransportType:
+    enum: [freight,other]
+
+  UldRateClass:
+    enum: [class_1,class_2,class_3,class_4,class_5,class_6,class_7,class_8,class_9]
+
+  VolumeUnit:
+    enum: [CM,CC,CF,CI]
+
+  VolumetricWeightDivisor:
+    enum: [europe,us,uk,can,can2]
+
+  WeightUnit:
+    enum: [K,L]

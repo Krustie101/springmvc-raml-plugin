@@ -13,6 +13,10 @@
 package com.phoenixnap.oss.ramlplugin.raml2code.interpreters;
 
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -23,7 +27,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.collections.MapUtils;
+import org.apache.commons.collections4.MapUtils;
+import org.jsonschema2pojo.util.NameHelper;
 import org.raml.v2.api.model.v10.datamodel.DateTimeTypeDeclaration;
 import org.raml.v2.api.model.v10.datamodel.TypeDeclaration;
 import org.slf4j.Logger;
@@ -68,6 +73,8 @@ public class PojoBuilder extends AbstractBuilder {
 
 	protected static final Logger logger = LoggerFactory.getLogger(PojoBuilder.class);
 
+	private List<JMethod> constructors = new ArrayList<>();
+
 	/**
 	 * Constructor allowing chaining of JCodeModels
 	 *
@@ -91,7 +98,7 @@ public class PojoBuilder extends AbstractBuilder {
 		this.pojo._extends(CodeModelHelper.findFirstClassBySimpleName(pojoModel, className));
 		return this;
 	}
-
+	
 	public PojoBuilder extendsClass(PojoBuilder classBuilder) {
 		if (classBuilder.pojo == null) {
 			throw new IllegalStateException("Supplied builder does not contain a class");
@@ -147,10 +154,11 @@ public class PojoBuilder extends AbstractBuilder {
 
 	private void withDefaultConstructor(String className) {
 		// Create default constructor
-		JMethod constructor = this.pojo.constructor(JMod.PUBLIC);
-		constructor.javadoc().add("Creates a new " + className + ".");
-		JBlock defaultConstructorBody = constructor.body();
+		JMethod defaultConstructor = this.pojo.constructor(JMod.PUBLIC);
+		defaultConstructor.javadoc().add("Creates a new " + className + ".");
+		JBlock defaultConstructorBody = defaultConstructor.body();
 		defaultConstructorBody.invoke("super");
+		constructors.add(defaultConstructor);
 	}
 
 	private JFieldVar parentContainsField(JClass pojo, String name) {
@@ -172,8 +180,41 @@ public class PojoBuilder extends AbstractBuilder {
 		return null;
 	}
 
+	public void withInitialStringValue(String name, String value) {
+		JFieldVar field = parentContainsField(this.pojo,name);
+		if (field == null) {
+			field = getField(name);
+		}
+		if (field == null) {
+			throw new IllegalStateException(String.format("Field <%s> not found",name));
+		}
+		
+		JExpression jExpression = null;
+		JClass resolvedType = resolveType(field.type().name());
+		
+		if (!StringUtils.isEmpty(value)) {
+			if (resolvedType instanceof JDefinedClass && ((JDefinedClass) resolvedType).getClassType().equals(ClassType.ENUM)) {
+				jExpression = JExpr.direct(resolvedType.name() + "." + NamingHelper.cleanNameForJavaEnum(value));
+			} else {
+				jExpression = JExpr.lit(value);
+			}
+		}
+		
+		if (jExpression == null) {
+			jExpression = JExpr._null();
+		}
+		
+		for (JMethod constructor : constructors) {
+			constructor.body().assign(JExpr._this().ref(field), jExpression);
+		}
+
+		
+		
+	}
+			
+	
 	public PojoBuilder withField(String name, String type, String comment, RamlTypeValidations validations,
-			TypeDeclaration typeDeclaration) {
+			TypeDeclaration typeDeclaration, boolean allowSetter) {
 		pojoCreationCheck();
 		logger.debug("Adding field: " + name + " to " + this.pojo.name());
 
@@ -245,7 +286,7 @@ public class PojoBuilder extends AbstractBuilder {
 			field.annotate(JsonProperty.class).param("value", typeDeclaration.name());
 		}
 
-		if (resolvedType.name().equals(Date.class.getSimpleName())) {
+		if (isSimpleDateTimeClassName(resolvedType.name())) {
 			JAnnotationUse jAnnotationUse = field.annotate(JsonFormat.class);
 			String format = null;
 			if (typeDeclaration instanceof DateTimeTypeDeclaration) {
@@ -275,11 +316,13 @@ public class PojoBuilder extends AbstractBuilder {
 		}
 
 		// Add set method
-		JMethod setter = this.pojo.method(JMod.PUBLIC, this.pojoModel.VOID, "set" + fieldName);
-		setter.param(field.type(), field.name());
-		setter.body().assign(JExpr._this().ref(field.name()), JExpr.ref(field.name()));
-		setter.javadoc().add("Set the " + name + ".");
-		setter.javadoc().addParam(field.name()).add("the new " + field.name());
+		if (allowSetter) {
+			JMethod setter = this.pojo.method(JMod.PUBLIC, this.pojoModel.VOID, "set" + fieldName);
+			setter.param(field.type(), field.name());
+			setter.body().assign(JExpr._this().ref(field.name()), JExpr.ref(field.name()));
+			setter.javadoc().add("Set the " + name + ".");
+			setter.javadoc().addParam(field.name()).add("the new " + field.name());
+		}
 
 		// Add with method
 		if (Config.getPojoConfig().isGenerateBuilders()) {
@@ -291,6 +334,12 @@ public class PojoBuilder extends AbstractBuilder {
 		}
 
 		return this;
+	}
+	
+	private boolean isSimpleDateTimeClassName(String name) {
+		return Date.class.getSimpleName().equals(name) || LocalDateTime.class.getSimpleName().equals(name)
+				|| ZonedDateTime.class.getSimpleName().equals(name) || Instant.class.getSimpleName().equals(name)
+				|| OffsetDateTime.class.getSimpleName().equals(name);
 	}
 
 	private JMethod generateGetterMethod(JFieldVar field, String fieldName, JExpression defaultValue) {
@@ -317,17 +366,24 @@ public class PojoBuilder extends AbstractBuilder {
 	 * 
 	 * @return This builder instance
 	 */
-	public PojoBuilder withCompleteConstructor() {
+	public PojoBuilder withCompleteConstructor(String discriminator) {
 		pojoCreationCheck();
 
 		// first we need to check if there are any fields to add to constructor
 		// because default constructor (without fields) is already present
 		Map<String, JFieldVar> nonTransientAndNonStaticFields = getNonTransientAndNonStaticFields();
-
+		if (discriminator != null) {
+			nonTransientAndNonStaticFields.remove(discriminator);
+		}
+		
 		if (MapUtils.isNotEmpty(nonTransientAndNonStaticFields)) {
 			// Create complete constructor
 			JMethod constructor = this.pojo.constructor(JMod.PUBLIC);
+			constructors.add(constructor);
 			Map<String, JVar> superParametersToAdd = getSuperParametersToAdd(this.pojo);
+			if (discriminator != null) {
+				superParametersToAdd.remove(discriminator);
+			}
 			addSuperConstructorInvocation(constructor, superParametersToAdd);
 			constructor.javadoc().add("Creates a new " + this.pojo.name() + ".");
 
@@ -396,6 +452,14 @@ public class PojoBuilder extends AbstractBuilder {
 		}
 
 		return nonStaticNonTransientFields;
+	}
+	
+	private JFieldVar getField(String name) {
+		JFieldVar field = null;
+		if (pojo instanceof JDefinedClass) {
+			field  = ((JDefinedClass) pojo).fields().get(name);
+		}
+		return field;
 	}
 
 	/**

@@ -15,8 +15,16 @@ package com.phoenixnap.oss.ramlplugin.raml2code.helpers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URI;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
@@ -28,6 +36,7 @@ import org.jsonschema2pojo.SchemaGenerator;
 import org.jsonschema2pojo.SchemaMapper;
 import org.jsonschema2pojo.SchemaStore;
 import org.jsonschema2pojo.rules.RuleFactory;
+import org.raml.v2.api.model.v10.declarations.AnnotationRef;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
@@ -92,13 +101,13 @@ public class SchemaHelper {
 	 * @return The Java Class which maps to this Simple RAML ParamType or string
 	 *         if one is not found
 	 */
-	public static Class<?> mapSimpleType(RamlParamType param, String format, String rawType) {
+	public static Class<?> mapSimpleType(RamlParamType param, String format, String rawType, List<AnnotationRef> annotations) {
 
 		switch (param) {
 			case BOOLEAN:
 				return Boolean.class;
 			case DATE:
-				return mapDateFormat(rawType);
+				return mapDateFormat(rawType, annotations);
 			case INTEGER: {
 				Class<?> fromFormat = mapNumberFromFormat(format);
 				if (fromFormat == Double.class) {
@@ -127,24 +136,59 @@ public class SchemaHelper {
 
 	}
 
-	public static Class<?> mapDateFormat(String rawType) {
+	public static Class<?> mapDateFormat(String rawType, List<AnnotationRef> annotations) {
 
 		String param = rawType.toUpperCase();
+		
+		AnnotationRef temporalAnnotationRef = null;
+		if (annotations != null) {
+			for (AnnotationRef annotationRef : annotations) {
+				if ("(temporal)".equals(annotationRef.name())) {
+					temporalAnnotationRef = annotationRef;
+					break;
+				}
+			}
+		}
+		String temporal = null;
+		if (temporalAnnotationRef != null && temporalAnnotationRef.structuredValue() != null && temporalAnnotationRef.structuredValue().isScalar()) {
+			Object value = temporalAnnotationRef.structuredValue().value();
+			if (value instanceof String) {
+				temporal = (String) value;
+			}
+		}
+		
 		try {
 			switch (param) {
 				case "DATE-ONLY":
+					if ("local".equals(temporal)) {
+						return LocalDate.class;
+					} 
 					String dateType = Config.getPojoConfig().getDateType();
 					if (StringUtils.hasText(dateType)) {
 						return Class.forName(dateType);
 					}
 					break;
 				case "TIME-ONLY":
+					if ("local".equals(temporal)) {
+						return LocalTime.class;
+					} else if ("offset".equals(temporal)) {
+						return OffsetTime.class;
+					}
 					String timeType = Config.getPojoConfig().getTimeType();
 					if (StringUtils.hasText(timeType)) {
 						return Class.forName(timeType);
 					}
 					break;
 				default:
+					if ("local".equals(temporal)) {
+						return LocalDateTime.class;
+					} else if ("instant".equals(temporal)) {
+						return Instant.class;
+					} else if ("zone".equals(temporal)) {
+						return ZonedDateTime.class;
+					} else if ("offset".equals(temporal)) {
+						return OffsetDateTime.class;
+					}
 					String dateTimeType = Config.getPojoConfig().getDateTimeType();
 					if (StringUtils.hasText(dateTimeType)) {
 						return Class.forName(dateTimeType);

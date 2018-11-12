@@ -1,0 +1,27 @@
+#%RAML 1.0 Library
+
+uses:
+  enumerations: enumerations.raml
+  refData: referenceData.raml
+
+types:
+
+  Length:
+    properties:
+      value: number
+      unit: enumerations.LengthUnit
+
+  MonetaryAmount:
+    properties:
+      value: number
+      currency: refData.Currency
+
+  Volume:
+    properties:
+      value: number
+      unit: enumerations.VolumeUnit
+
+  Weight:
+    properties:
+      value: number
+      unit: enumerations.WeightUnit

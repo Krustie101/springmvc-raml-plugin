@@ -26,4 +26,7 @@ public interface RamlDataType {
 	TypeDeclaration getType();
 
 	String getDiscriminatorValue();
+	
+	String getDiscriminator();
+
 }

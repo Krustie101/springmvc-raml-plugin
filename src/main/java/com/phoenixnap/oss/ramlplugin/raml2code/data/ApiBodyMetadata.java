@@ -99,7 +99,7 @@ public class ApiBodyMetadata {
 					if (codeModel.countArtifacts() == 0) {
 						if (!"object".equals(possibleType.toLowerCase())) {
 							try {
-								this.name = SchemaHelper.mapSimpleType(RamlParamType.valueOf(possibleType.toUpperCase()), null, null)
+								this.name = SchemaHelper.mapSimpleType(RamlParamType.valueOf(possibleType.toUpperCase()), null, null, null)
 										.getSimpleName();
 							} catch (Exception ex) {
 								this.name = String.class.getSimpleName(); // default

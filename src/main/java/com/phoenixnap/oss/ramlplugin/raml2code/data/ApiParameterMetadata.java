@@ -111,7 +111,7 @@ public class ApiParameterMetadata {
 		this.displayName = param.getDisplayName();
 
 		this.format = param.getFormat();
-		this.type = SchemaHelper.mapSimpleType(param.getType(), this.format, param.getRawType());
+		this.type = SchemaHelper.mapSimpleType(param.getType(), this.format, param.getRawType(), param.getAnnotations());
 
 		// If it's a repeatable parameter simply convert to an array of type
 		if (param.isRepeat()) {

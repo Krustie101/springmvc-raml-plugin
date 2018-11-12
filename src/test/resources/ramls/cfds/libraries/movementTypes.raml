@@ -1,0 +1,31 @@
+#%RAML 1.0 Library
+uses:
+  enumerations: enumerations.raml
+  refData: referenceData.raml
+
+types:
+
+  MovementLeg:
+    properties:
+      id: string
+      std: datetime
+      sta: datetime
+      origin: refData.Location
+      destination: refData.Location
+      carrier: refData.Carrier
+      number: string
+      suffix: string
+      air: boolean
+      aircraftType: refData.AirCraftType
+
+  Movement:
+    properties:
+      id: string
+      direction: enumerations.DirectionType
+      owner: refData.Station
+      origin: refData.Location
+      destination: refData.Location
+      std: datetime
+      sta: datetime
+      adhoc: boolean
+      legs: MovementLeg[]

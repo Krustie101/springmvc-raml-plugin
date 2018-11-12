@@ -12,8 +12,8 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 
 @JsonTypeInfo(property = "kind", use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.EXISTING_PROPERTY, visible = true)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = User.class, name = "usr"),
-    @JsonSubTypes.Type(value = Employee.class, name = "emp")
+    @JsonSubTypes.Type(value = Employee.class, name = "emp"),
+    @JsonSubTypes.Type(value = User.class, name = "usr")
 })
 public class Person implements Serializable
 {
@@ -27,16 +27,18 @@ public class Person implements Serializable
      */
     public Person() {
         super();
+        this.kind = null;
     }
 
     /**
      * Creates a new Person.
      * 
      */
-    public Person(String kind, String name) {
+    public Person(String name) {
         super();
-        this.kind = kind;
         this.name = name;
+        this.kind = null;
+        
     }
 
     /**
@@ -48,16 +50,6 @@ public class Person implements Serializable
     @NotNull
     public String getKind() {
         return kind;
-    }
-
-    /**
-     * Set the kind.
-     * 
-     * @param kind
-     *     the new kind
-     */
-    public void setKind(String kind) {
-        this.kind = kind;
     }
 
     /**

@@ -12,6 +12,8 @@
  */
 package com.phoenixnap.oss.ramlplugin.raml2code.interpreters;
 
+import static org.hamcrest.CoreMatchers.nullValue;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -97,15 +99,8 @@ public class ObjectTypeInterpreter extends BaseTypeInterpreter {
 		}
 
 		// check if there is a discriminator and child data types
-		List<RamlDataType> childTypes = new ArrayList<>();
-		if (!StringUtils.isEmpty(objectType.discriminator())) {
-			for (RamlDataType ramlDataType : document.getTypes().values()) {
-				if (name.equals(ramlDataType.getType().type())) {
-					childTypes.add(ramlDataType);
-				}
-			}
-		}
-
+		List<RamlDataType> childTypes = getDiscrimininatedDescendantsIncludingSelf(document, objectType, name);
+		
 		// Lets check if we've already handled this class before.
 		if (builderModel != null) {
 			JClass searchedClass = builderModel._getClass(Config.getPojoPackage() + "." + NamingHelper.convertToClassName(name));
@@ -154,8 +149,13 @@ public class ObjectTypeInterpreter extends BaseTypeInterpreter {
 		}
 
 		List<String> excludeFieldsFromToString = new ArrayList<>();
+		String discriminator = objectType.discriminator();
+		String discriminatorField = null;
+		
 		for (TypeDeclaration objectProperty : objectType.properties()) {
 
+			boolean discriminatorProperty = false;
+			
 			String fieldName = null;
 			if (Config.getOverrideNamingLogicWith() == OverrideNamingLogicWith.DISPLAY_NAME && objectProperty.displayName() != null) {
 				fieldName = NamingHelper.getParameterName(objectProperty.displayName().value());
@@ -170,6 +170,11 @@ public class ObjectTypeInterpreter extends BaseTypeInterpreter {
 			if (StringUtils.isEmpty(fieldName)) {
 				fieldName = NamingHelper.getParameterName(objectProperty.name());
 			}
+			
+			if (!StringUtils.isEmpty(discriminator) && discriminator.equals(objectProperty.name())) {
+				discriminatorField = fieldName;
+				discriminatorProperty = true;
+			}
 
 			List<AnnotationRef> annotations = objectProperty.annotations();
 			for (AnnotationRef annotation : annotations) {
@@ -181,12 +186,25 @@ public class ObjectTypeInterpreter extends BaseTypeInterpreter {
 					objectProperty, builderModel, true);
 			String childType = childResult.getResolvedClassOrBuiltOrObject().fullName();
 			builder.withField(fieldName, childType, RamlTypeHelper.getDescription(objectProperty), childResult.getValidations(),
-					objectProperty);
+					objectProperty,!discriminatorProperty);
 
 		}
+		
+		if (!StringUtils.isEmpty(discriminator) && StringUtils.isEmpty(discriminatorField)) {
+			discriminatorField = NamingHelper.getParameterName(discriminator);
+		}
+		
 
 		// Add a constructor with all fields
-		builder.withCompleteConstructor();
+		
+
+		String discriminatorValue = getDiscriminatorValue(document, objectType, name);
+		
+		builder.withCompleteConstructor(discriminatorField);
+
+		if (!StringUtils.isEmpty(discriminator)) {
+			builder.withInitialStringValue(discriminatorField, discriminatorValue);
+		}
 
 		// Add overriden hashCode(), equals() and toString() methods
 		builder.withOverridenMethods(excludeFieldsFromToString);
@@ -199,4 +217,37 @@ public class ObjectTypeInterpreter extends BaseTypeInterpreter {
 		return result;
 	}
 
+	private List<RamlDataType> getDiscrimininatedDescendantsIncludingSelf(RamlRoot document, ObjectTypeDeclaration objectType, String name) {
+		List<RamlDataType> discriminatedDescendantsIncludingSelf = new ArrayList<>();
+		if (StringUtils.isEmpty(objectType.discriminator())) return discriminatedDescendantsIncludingSelf;
+		RamlDataType dataType = document.getTypes().get(name);
+		collectDiscrimininatedDescendantsIncludingSelf(document, dataType, discriminatedDescendantsIncludingSelf, true);
+		return discriminatedDescendantsIncludingSelf;
+	}
+	
+	private void collectDiscrimininatedDescendantsIncludingSelf(RamlRoot document, RamlDataType dataType, List<RamlDataType> discriminatedDescendantsIncludingSelf, boolean root) {
+		if (dataType == null) return;
+		List<RamlDataType> children = document.getChildTypes().get(dataType.getType().name());
+		if (children != null && !children.isEmpty()) {
+			if (!StringUtils.isEmpty(dataType.getDiscriminatorValue())) {
+				discriminatedDescendantsIncludingSelf.add(dataType);
+			}
+			for (RamlDataType child : children) {
+				collectDiscrimininatedDescendantsIncludingSelf(document, child, discriminatedDescendantsIncludingSelf, false);
+			}
+		} else if (!root) {
+			discriminatedDescendantsIncludingSelf.add(dataType);
+		}
+
+	}
+	
+	private String getDiscriminatorValue(RamlRoot document, ObjectTypeDeclaration objectType, String name) {
+		String discriminatorValue = objectType.discriminatorValue();
+		if (StringUtils.isEmpty(discriminatorValue) && !document.hasChildTypes(name)) {
+			discriminatorValue = name;
+		}
+		return discriminatorValue;
+	}
+
+	
 }

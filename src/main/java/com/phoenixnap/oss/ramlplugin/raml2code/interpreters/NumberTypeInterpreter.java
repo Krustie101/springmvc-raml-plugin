@@ -64,7 +64,7 @@ public class NumberTypeInterpreter extends BaseTypeInterpreter {
 				}
 
 			} else {
-				resolvedType = SchemaHelper.mapSimpleType(RamlParamType.NUMBER, format, type.type()).getSimpleName();
+				resolvedType = SchemaHelper.mapSimpleType(RamlParamType.NUMBER, format, type.type(), type.annotations()).getSimpleName();
 			}
 		}
 

@@ -1,0 +1,59 @@
+#%RAML 1.0 Library
+
+uses:
+  enumerations: enumerations.raml
+  refData: referenceData.raml
+  invoiceTypes: invoiceTypes.raml
+  rateCostTypes: rateCostTypes.raml
+  surchargeCostTypes: surchargeCostTypes.raml
+  ticketCostTypes: ticketCostTypes.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  TestMultipleInheritance:
+    properties:
+      jk: string
+
+  ReconciliationInformation:
+    properties:
+      usesOldReconciliationLogic: boolean
+      reconciliationStatus: enumerations.ReconciliationStatus
+      reconciliation: invoiceTypes.Reconciliation
+      reconciliationExpectedCostAmount: valueTypes.MonetaryAmount
+      reconciledAmount: valueTypes.MonetaryAmount
+
+  AbstractOBCostStructure:
+    properties:
+      id: string
+      calculationDate: datetime-only
+      payStation: refData.Station
+      rateCostComment: string
+      otherChargesComment: string
+      taxChargesCommant: string
+      rateCost: rateCostTypes.RateCost
+      otherSurchargeCosts: surchargeCostTypes.AbstractSurchargeCost[]
+      taxChargeCosts: surchargeCostTypes.AbstractSurchargeCost[]
+
+
+  # Originally ReconciliationInformation was ReconcilableCostStructure and multiple inheritance was used to also let PrivateOBCostStructure inherit from ReconcilableCostStructure
+  # but the raml spring mvc generator was not able to handle this. Aarrgh
+  PrivateOBCostStructure:
+    type: AbstractOBCostStructure
+    properties:
+      reconciliationInfo: ReconciliationInformation
+      costStatus: enumerations.ExpectedCostStatus
+      ticketCost: ticketCostTypes.TicketCost
+
+  PublicCoststructure:
+    type: AbstractOBCostStructure
+
+  PrivateIBCoststructure:
+    properties:
+      id: string
+      reconciliationInfo: ReconciliationInformation
+      calculationDate: datetime-only
+      payStation: refData.Station
+      costStatus: enumerations.ExpectedCostStatus
+      inboundHandlingChargesComments: string
+      inboundHandlingSurchargeCosts: surchargeCostTypes.AbstractSurchargeCost[]

@@ -1,0 +1,59 @@
+#%RAML 1.0 Library
+uses:
+  enumerations: enumerations.raml
+  refData:    referenceData.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  AbstractLoad:
+    discriminator: loadType
+    properties:
+      id: string
+      loadType:
+        type: string
+        enum : [loose,uld]
+      doxWeight: valueTypes.Weight
+      doxPieces: integer
+      wpxWeight: valueTypes.Weight
+      wpxPieces: integer
+      comments: string
+
+  LooseLoad:
+    type: AbstractLoad
+    discriminatorValue: loose
+    properties:
+      doxSlac: integer
+      wpxSlac: integer
+
+  UldLoad:
+    type: AbstractLoad
+    discriminatorValue: uld
+    properties:
+      doxBulkLoaded: boolean
+      wpxBulkLoaded: boolean
+      usedVolumePercentage: integer
+      uld:
+        type: object
+        properties:
+          rateClass: enumerations.UldRateClass
+          number: string
+          type: string
+          ownerCode: string
+
+
+  #Load:
+  #  description: Union of Loose and ULD Load
+  #  type: LooseLoad | UldLoad
+
+  LoadQuantityDimension:
+    properties:
+      pieces: integer
+      legth: valueTypes.Length
+      width: valueTypes.Length
+      height: valueTypes.Length
+
+  SpeedPackPieceRange:
+    properties:
+      pieces: integer
+      startWeight: valueTypes.Weight

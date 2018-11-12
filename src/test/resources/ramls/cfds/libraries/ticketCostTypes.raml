@@ -1,0 +1,17 @@
+#%RAML 1.0 Library
+
+uses:
+  tariffStructureTypes:  tariffStructureTypes.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  CalculatedTicketCost:
+    properties:
+      amount: valueTypes.MonetaryAmount
+
+  TicketCost:
+    properties:
+      amount: valueTypes.MonetaryAmount
+      tariffStructure: tariffStructureTypes.TariffStructure
+      calculatedTicketCost: CalculatedTicketCost

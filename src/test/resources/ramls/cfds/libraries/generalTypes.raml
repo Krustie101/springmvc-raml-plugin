@@ -1,0 +1,24 @@
+#%RAML 1.0  Library
+uses:
+  refData: referenceData.raml
+
+types:
+
+  instant:
+    type: datetime
+
+  Allotment:
+    properties:
+      id: string
+      name: string
+
+  Paperwork:
+    properties:
+      id: string
+      number: string
+      document: string
+      station: refData.Station
+      type:
+        type: string
+        enum: [mawb, stockmawb, voucher, mawbFormatVoucher]
+      prefix?: refData.Prefix

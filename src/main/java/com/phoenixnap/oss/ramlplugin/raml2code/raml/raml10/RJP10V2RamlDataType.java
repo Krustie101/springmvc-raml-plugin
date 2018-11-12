@@ -30,7 +30,7 @@ import com.phoenixnap.oss.ramlplugin.raml2code.raml.RamlDataType;
 public class RJP10V2RamlDataType implements RamlDataType {
 
 	private final TypeDeclaration dataType;
-
+	
 	public RJP10V2RamlDataType(TypeDeclaration dataType) {
 		this.dataType = dataType;
 	}
@@ -47,4 +47,13 @@ public class RJP10V2RamlDataType implements RamlDataType {
 		}
 		return null;
 	}
+
+	@Override
+	public String getDiscriminator() {
+		if (this.dataType instanceof ObjectTypeDeclaration) {
+			return ((ObjectTypeDeclaration) this.dataType).discriminator();
+		}
+		return null;
+	}
+	
 }

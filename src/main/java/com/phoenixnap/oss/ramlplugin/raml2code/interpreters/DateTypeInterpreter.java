@@ -41,7 +41,7 @@ public class DateTypeInterpreter extends BaseTypeInterpreter {
 	public RamlInterpretationResult interpret(RamlRoot document, TypeDeclaration type, JCodeModel builderModel, boolean property) {
 
 		RamlInterpretationResult result = new RamlInterpretationResult(type.required());
-		result.setResolvedClass(builderModel.ref(SchemaHelper.mapDateFormat(type.type())));
+		result.setResolvedClass(builderModel.ref(SchemaHelper.mapDateFormat(type.type(), type.annotations())));
 		return result;
 	}
 }

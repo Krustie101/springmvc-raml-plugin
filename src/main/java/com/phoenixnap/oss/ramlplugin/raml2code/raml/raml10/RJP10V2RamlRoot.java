@@ -1,6 +1,8 @@
 package com.phoenixnap.oss.ramlplugin.raml2code.raml.raml10;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,8 @@ public class RJP10V2RamlRoot implements RamlRoot {
 
 	private final Api api;
 	private Map<String, RamlResource> resources = new LinkedHashMap<>();
+	private Map<String, RamlDataType> types;
+	private Map<String, List<RamlDataType>> childTypes;
 
 	public RJP10V2RamlRoot(Api api) {
 		this.api = api;
@@ -73,24 +77,57 @@ public class RJP10V2RamlRoot implements RamlRoot {
 
 	@Override
 	public Map<String, RamlDataType> getTypes() {
-		Map<String, RamlDataType> types = api.types().stream()
-				.collect(Collectors.toMap(this::nameType, this::typeDeclarationToRamlDataType));
-
-		Map<String, RamlDataType> libTypes = api.uses().stream().flatMap(x -> x.types().stream())
-				.collect(Collectors.toMap(this::nameType, this::typeDeclarationToRamlDataType));
-
-		types.putAll(libTypes);
-
-		// When searching for all libraries that other libraries use it's
-		// possible to pull in same library multiple times.
-		// In order to avoid IllegalStateException we'll add basic
-		// mergeFunction.
-		Map<String, RamlDataType> libOfLibTypes = api.uses().stream().flatMap(x -> x.uses().stream()).flatMap(x -> x.types().stream())
-				.collect(Collectors.toMap(this::nameType, this::typeDeclarationToRamlDataType, (x, y) -> x));
-
-		types.putAll(libOfLibTypes);
-
-		return types;
+		if (this.types == null) {
+			Map<String, RamlDataType> types = api.types().stream()
+					.collect(Collectors.toMap(this::nameType, this::typeDeclarationToRamlDataType));
+	
+			Map<String, RamlDataType> libTypes = api.uses().stream().flatMap(x -> x.types().stream())
+					.collect(Collectors.toMap(this::nameType, this::typeDeclarationToRamlDataType));
+	
+			types.putAll(libTypes);
+	
+			// When searching for all libraries that other libraries use it's
+			// possible to pull in same library multiple times.
+			// In order to avoid IllegalStateException we'll add basic
+			// mergeFunction.
+			Map<String, RamlDataType> libOfLibTypes = api.uses().stream().flatMap(x -> x.uses().stream()).flatMap(x -> x.types().stream())
+					.collect(Collectors.toMap(this::nameType, this::typeDeclarationToRamlDataType, (x, y) -> x));
+	
+			types.putAll(libOfLibTypes);
+			this.types = types;
+		}
+		return this.types;
+	}
+	
+	@Override
+	public Map<String, List<RamlDataType>> getChildTypes() {
+		if (this.childTypes == null) {
+			Map<String, List<RamlDataType>> childTypes = new HashMap<String, List<RamlDataType>>();
+			for (RamlDataType dataType : getTypes().values()) {
+				List<TypeDeclaration> parentTypes = dataType.getType().parentTypes();
+				if (parentTypes != null && !parentTypes.isEmpty()) {
+					for (TypeDeclaration parentType : parentTypes) {
+						String parentName = parentType.name();
+						if (getTypes().containsKey(parentName)) {
+							List<RamlDataType> children = childTypes.get(parentName);
+							if (children == null) {
+								children = new ArrayList<>();
+								childTypes.put(parentName, children);
+							}
+							children.add(dataType);
+						}
+					}
+				}
+			}
+			this.childTypes = childTypes;
+		}
+		return this.childTypes;
+	}
+	
+	@Override
+	public boolean hasChildTypes(String name) {
+		List<?> children = getChildTypes().get(name);
+		return children != null ? !children.isEmpty() : false;
 	}
 
 	private Map<String, String> typeDeclarationToMap(TypeDeclaration typeDeclaration) {

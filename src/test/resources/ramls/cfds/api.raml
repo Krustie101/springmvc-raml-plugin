@@ -1,0 +1,69 @@
+#%RAML 1.0
+title: Calms Financial Data API
+baseUri: http://api.cfds.dhl.com/{version}
+version: v1
+mediaType: application/json
+uses:
+  enumerations: libraries/enumerations.raml
+  refData: libraries/referenceData.raml
+  valueTypes: libraries/valueTypes.raml
+  movementTypes: libraries/movementTypes.raml
+  loadTypes: libraries/loadTypes.raml
+  surchargeCostTypes: libraries/surchargeCostTypes.raml
+  invoiceTypes: libraries/invoiceTypes.raml
+  generalTypes: libraries/generalTypes.raml
+  rateCostTypes: libraries/rateCostTypes.raml
+  tariffStructureTypes: libraries/tariffStructureTypes.raml
+  ticketCostTypes: libraries/ticketCostTypes.raml
+  costStructureTypes: libraries/costStructureTypes.raml
+  consignmentTypes: libraries/consignmentTypes.raml
+annotationTypes:
+  temporal:
+    type: 
+      enum: [local,instant,zone,offset]
+    allowedTargets: [TypeDeclaration]
+
+types:
+  offset-datetime-only:
+    type: datetime-only
+    (temporal): offset
+  xxx:
+    properties:
+      zuut: offset-datetime-only
+      ruul:
+        type: datetime-only
+        (temporal): offset  
+      
+
+
+
+
+/consignments:
+  get:
+    description: Get consignments by query parameters
+    queryParameters:
+      station: string
+      from:
+        type: datetime-only
+        (temporal): instant
+      to: offset-datetime-only
+      origin?: string
+      destination?: string
+    responses:
+      200:
+        body:
+          application/json:
+            type: array
+            items: consignmentTypes.OBConsignment
+  post:
+    description: Create consignment in financial data store
+    body:
+      type: consignmentTypes.AbstractConsignment
+  /{consignmentId}:
+    get:
+      description: Get consignment data by id {consignmentId}
+      responses:
+        200:
+          body:
+            application/json:
+              type: consignmentTypes.AbstractConsignment

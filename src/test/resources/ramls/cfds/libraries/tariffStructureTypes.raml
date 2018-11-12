@@ -1,0 +1,17 @@
+#%RAML 1.0 Library
+  
+types:
+
+  TariffStructure:
+    properties:
+      id: string
+      tariffStructureType:
+        type: string
+        enum: [rate,speedpack,surcharge]
+
+  TariffClass:
+    properties:
+      id: string
+      tarifClassType:
+        type: string
+        enum: [rate,speedpack,surcharge]

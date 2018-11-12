@@ -1,89 +1,92 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	  
-  	<groupId>com.phoenixnap.oss</groupId>
+
+	<groupId>com.phoenixnap.oss</groupId>
 	<artifactId>springmvc-raml-plugin</artifactId>
-	<version>2.0.5</version>
-	
+	<version>3.0.0-SNAPSHOT</version>
+
 	<parent>
-        <groupId>io.spring.platform</groupId>
-        <artifactId>platform-bom</artifactId>
-        <version>Brussels-SR6</version>
-        <relativePath/>
-    </parent>
-	
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.1.0.RELEASE</version>
+		<relativePath />
+	</parent>
+
 	<name>RAML to Spring MVC code generator</name>
 	<description>Component is Maven plugin that reads RAML documents and creates Spring MVC endpoints</description>
 	<url>https://github.com/phoenixnap/springmvc-raml-plugin/tree/master/springmvc-raml-parser</url>
-  	<packaging>maven-plugin</packaging>
-  	
+	<packaging>maven-plugin</packaging>
+
 	<developers>
 		<developer>
 			<name>Aleksandar Stojsavljevic</name>
 			<email>aleksandars@ccbill.com</email>
 			<organization>CCBill</organization>
-      		<organizationUrl>http://www.ccbill.com</organizationUrl>
+			<organizationUrl>http://www.ccbill.com</organizationUrl>
 		</developer>
 	</developers>
-	
+
 	<licenses>
-	  <license>
-		<name>The Apache License, Version 2.0</name>
-		<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-	  </license>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
 	</licenses>
-	
+
 	<scm>
-	  <connection>scm:git:git@github.com:phoenixnap/springmvc-raml-plugin.git</connection>
-	  <developerConnection>scm:git:git@github.com:phoenixnap/springmvc-raml-plugin.git</developerConnection>
-	  <url>git@github.com:phoenixnap/springmvc-raml-plugin.git</url>
+		<connection>scm:git:git@github.com:phoenixnap/springmvc-raml-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:phoenixnap/springmvc-raml-plugin.git</developerConnection>
+		<url>git@github.com:phoenixnap/springmvc-raml-plugin.git</url>
 	</scm>
-	
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>1.8</maven.compiler.source>
-    	<maven.compiler.target>1.8</maven.compiler.target>
-    	<maven.compiler.parameters>true</maven.compiler.parameters>
-    	
+		<maven.compiler.target>1.8</maven.compiler.target>
+		<maven.compiler.parameters>true</maven.compiler.parameters>
+
 		<powermock.version>1.6.2</powermock.version>
-		<maven.core.version>3.3.9</maven.core.version>
-        <jsonschema2pojo.version>0.5.1</jsonschema2pojo.version>
+		<maven.core.version>3.5.3</maven.core.version>
+		<jsonschema2pojo.version>0.5.1</jsonschema2pojo.version>
 		<ramlparser2.version>1.0.26</ramlparser2.version>
-		<feign.client.version>1.1.6.RELEASE</feign.client.version>
-        <codemodel.version>2.6</codemodel.version>
+		<feign.client.version>1.4.6.RELEASE</feign.client.version>
+		<codemodel.version>2.6</codemodel.version>
 	</properties>
-  	
+
 	<dependencies>
 
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<version>2.6</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>commons-collections</groupId>
-		    <artifactId>commons-collections</artifactId>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-collections4</artifactId>
+			<version>4.2</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.raml</groupId>
 			<artifactId>raml-parser-2</artifactId>
 			<version>${ramlparser2.version}</version>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.jsonschema2pojo</groupId>
 			<artifactId>jsonschema2pojo-core</artifactId>
 			<version>${jsonschema2pojo.version}</version>
 		</dependency>
-        
-        <dependency>
-            <groupId>com.sun.codemodel</groupId>
-            <artifactId>codemodel</artifactId>
-            <version>${codemodel.version}</version>
-        </dependency>
-        
+
+		<dependency>
+			<groupId>com.sun.codemodel</groupId>
+			<artifactId>codemodel</artifactId>
+			<version>${codemodel.version}</version>
+		</dependency>
+
 		<dependency>
 			<groupId>org.springframework.cloud</groupId>
 			<artifactId>spring-cloud-starter-feign</artifactId>
@@ -96,7 +99,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		
+
 		<!-- Maven -->
 		<dependency>
 			<groupId>org.apache.maven</groupId>
@@ -126,18 +129,21 @@
 			<scope>test</scope>
 			<version>3.3.0</version>
 		</dependency>
-		
-		
+
+
 		<!-- Test Dependencies -->
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-		</dependency>	
+		</dependency>
 		<dependency>
 			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-all</artifactId>
-			<scope>test</scope>
+			<artifactId>hamcrest-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-library</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>
@@ -157,9 +163,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-		    <groupId>org.slf4j</groupId>
-		    <artifactId>slf4j-log4j12</artifactId>
-		    <scope>test</scope>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
 		</dependency>
 	</dependencies>
 
@@ -184,9 +190,9 @@
 							<id>mojo-descriptor</id>
 							<phase>process-classes</phase>
 							<goals>
-								 <goal>descriptor</goal>
+								<goal>descriptor</goal>
 							</goals>
-					   </execution>
+						</execution>
 						<execution>
 							<id>default-descriptor</id>
 							<goals>
@@ -218,9 +224,9 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
-	
+
 		<plugins>
-			<plugin>
+			<!-- plugin>
 				<groupId>net.revelc.code.formatter</groupId>
 				<artifactId>formatter-maven-plugin</artifactId>
 				<version>2.7.1</version>
@@ -235,9 +241,9 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin-->
 		</plugins>
-		
+
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>

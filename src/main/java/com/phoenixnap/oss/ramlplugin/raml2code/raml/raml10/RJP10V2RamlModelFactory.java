@@ -141,14 +141,17 @@ public class RJP10V2RamlModelFactory implements RamlModelFactory {
 		if (paramType == null) {
 			return RamlParamType.STRING;
 		}
-
+	
 		String param = ((String) paramType).toUpperCase();
+		param = modifyDateParametersType(param);
+		
 		switch (param) {
 			case "DATE":
 			case "DATE-ONLY":
 			case "TIME-ONLY":
 			case "DATETIME-ONLY":
 			case "DATETIME":
+			case "INSTANT":
 				return RamlParamType.DATE;
 			case "STRING":
 				return RamlParamType.STRING;
@@ -162,6 +165,24 @@ public class RJP10V2RamlModelFactory implements RamlModelFactory {
 				return RamlParamType.BOOLEAN;
 			default:
 				return RamlParamType.DATA_TYPE;
+		}
+	}
+	
+	private String modifyDateParametersType(String type) {
+		if (type.endsWith("-DATE")) {
+			return "DATE";
+		} else if (type.endsWith("-DATE-ONLY")) {
+			return "DATE-ONLY";
+		} else if (type.endsWith("-TIME-ONLY")) {
+			return "TIME-ONLY";
+		} else if (type.endsWith("DATETIME-ONLY")) {
+			return "DATETIME-ONLY";
+		} else if (type.endsWith("-DATETIME")) {
+			return "DATETIME";
+		} else if (type.endsWith("-INSTANT")) {
+			return "INSTANT";
+		} else {
+			return type;
 		}
 	}
 }

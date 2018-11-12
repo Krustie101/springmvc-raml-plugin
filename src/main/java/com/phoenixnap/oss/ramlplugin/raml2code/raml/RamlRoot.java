@@ -34,4 +34,9 @@ public interface RamlRoot extends RamlResourceRoot {
 	List<RamlSecurityReference> getSecuredBy();
 
 	List<RamlSecurityScheme> getSecuritySchemes();
+
+	Map<String, List<RamlDataType>> getChildTypes();
+	
+	boolean hasChildTypes(String name);
+	
 }

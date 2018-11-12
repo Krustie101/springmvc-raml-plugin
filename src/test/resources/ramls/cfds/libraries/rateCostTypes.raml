@@ -1,0 +1,74 @@
+#%RAML 1.0 Library
+
+uses:
+  enumerations: enumerations.raml
+  refData:    referenceData.raml
+  tariffStructureTypes:  tariffStructureTypes.raml
+  valueTypes: valueTypes.raml
+
+types:
+
+  CalculatedRateCost:
+    properties:
+      id: string
+      payType: enumerations.TariffStructurePayType
+      adjusted: boolean
+      weightUnit: enumerations.WeightUnit
+      currency: refData.Currency
+      totalPieces: integer
+      averageDiscountPercentage: number
+      totalChargeableWeight: valueTypes.Weight
+      totalActualWeight: valueTypes.Weight
+      totalAccountingWeight: valueTypes.Weight
+      totalFlatChargeAmount: valueTypes.MonetaryAmount
+      totalDiscountedChargeAmount: valueTypes.MonetaryAmount
+      minimumChargeAmount: valueTypes.MonetaryAmount
+      averagePieceRateAmount: valueTypes.MonetaryAmount
+      averageWeightUnitRateAmount: valueTypes.MonetaryAmount
+
+  RateCost:
+    properties:
+      id: string
+      tariffStructure: tariffStructureTypes.TariffStructure
+      payType: enumerations.TariffStructurePayType
+      adjusted: boolean
+      weightUnit: enumerations.WeightUnit
+      currency: refData.Currency
+      averageDiscountPercentage: number
+      totalChargeableWeight: valueTypes.Weight
+      totalFlatChargeAmount: valueTypes.MonetaryAmount
+      totalDiscountedChargeAmount: valueTypes.MonetaryAmount
+      minimumChargeAmount: valueTypes.MonetaryAmount
+      averagePieceRateAmount: valueTypes.MonetaryAmount
+      averageWeightUnitRateAmount: valueTypes.MonetaryAmount
+      calculatedRateCost: CalculatedRateCost
+      loadRateCosts: LoadRateCost[]
+
+  CalculatedLoadRateCost:
+    properties:
+      currency: refData.Currency
+      pieces: integer
+      discountPercentage: number
+      accountingWeight: valueTypes.Weight
+      actualWeight: valueTypes.Weight
+      chargeableWeight: valueTypes.Weight
+      pieceRateAmount: valueTypes.MonetaryAmount
+      weightUniRateAmount: valueTypes.MonetaryAmount
+      chargeAmount: valueTypes.MonetaryAmount
+
+  LoadRateCost:
+    properties:
+      id: string
+      appliedMawbRateClass: enumerations.MawbRateClass
+      copyChargeableWeightToPrivateCost: boolean
+      comments: string
+      currency: refData.Currency
+      tariffClass: tariffStructureTypes.TariffClass
+      discountPercentage: number
+      accountingWeight: valueTypes.Weight
+      chargeableWeight: valueTypes.Weight
+      pieceRateAmount: valueTypes.MonetaryAmount
+      weightUniRateAmount: valueTypes.MonetaryAmount
+      chargeAmount: valueTypes.MonetaryAmount
+      #loads: types.Load[]
+      calculateLoadRateCost: CalculatedLoadRateCost
